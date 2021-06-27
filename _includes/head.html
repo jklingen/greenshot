@@ -30,7 +30,7 @@
 	
     <link rel="canonical" href="{{ site.url }}{{ page.url | replace:'index.html','' }}">
     
-    <script type="text/javascript">
+    <script type="text/plain" data-type="application/javascript" data-name="google-analytics">
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', 'UA-30035814-1']);
         _gaq.push (['_gat._anonymizeIp']);
@@ -41,5 +41,8 @@
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
     </script>
+	
+    <script defer type="application/javascript" src="js/vendor/klaro-config.js"></script>
+    <script defer data-config="klaroConfig" type="application/javascript" src="js/vendor/klaro-0.7.js"></script>
 
 </head>
