@@ -99,14 +99,14 @@ var klaroConfig = {
         The `zz` key contains default translations that will be used as fallback values.
             This can e.g. be useful for defining a fallback privacy policy URL.
         */
-        zz: {
+        /*zz: {
             privacyPolicyUrl: '/privacy',
 
-        },
+        },*/
         /*de: {
             /*
             You can specify a language-specific link to your privacy policy here.
-            */
+            * /
             privacyPolicyUrl: '/datenschutz',
             consentNotice: {
                 description: 'Dieser Text wird in der Einwilligungsbox erscheinen.',
@@ -120,7 +120,7 @@ var klaroConfig = {
             /*
             You should also define translations for every purpose you define in the
             'services' section. You can define a title and an (optional) description.
-            */
+            * /
             purposes: {
                 analytics: {
                     title: 'Besucher-Statistiken'
@@ -139,7 +139,7 @@ var klaroConfig = {
                 },
             },
         },*/
-        en: {
+        zz: {
             privacyPolicyUrl: '/privacy',
             consentModal: {
                 description:
