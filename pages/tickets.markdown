@@ -4,8 +4,9 @@ title: Got Feedback or Bugs?
 permalink: /tickets/
 categories: []
 comments: []
-tags: []
+tags: [uses_alerts]
 ---
+{% include version-check.html %}
 First, please have a look at our [FAQ](/faq) and [help](/help) pages.
 
 If that didn't help, maybe the following will: 
