@@ -2,7 +2,14 @@
 
 ## Executive Summary
 
-This document outlines a comprehensive plan to migrate Greenshot's legacy Windows Forms UI to a modern, scalable UI framework. The migration will be gradual, opt-in during development, and maintain backward compatibility until completion.
+This document outlines a comprehensive plan to migrate Greenshot's legacy Windows Forms UI to **Avalonia UI**, a modern, cross-platform XAML framework. This strategic choice positions Greenshot for future growth across Windows, Linux, and macOS while solving current issues with DPI scaling, translation overflow, and dated appearance.
+
+**Key Decision: Avalonia UI**
+- Modern, actively developed cross-platform framework
+- Enables Linux and macOS support from day one
+- XAML/MVVM patterns familiar to .NET developers
+- Requires .NET 6+ upgrade (strategic modernization)
+- Timeline: 35-40 weeks for complete migration
 
 ## Current State Analysis
 
@@ -392,21 +399,35 @@ Given the tension between quick migration and cross-platform future, consider th
 
 **Risk Level**: MEDIUM-HIGH (vs LOW for WPF)
 
-### Final Recommendation
+### Final Recommendation: Avalonia UI
 
-**For Greenshot Today**: Start with **WPF**
-- Lowest risk, fastest delivery
-- Solves immediate problems
-- Proven in existing codebase
-- Enables future Avalonia migration
+**Primary Choice**: **Avalonia UI** for modern, cross-platform future
 
-**For Greenshot Future**: Plan migration to **Avalonia** when:
-- .NET 6+ upgrade is feasible
-- Cross-platform demand is validated
-- WPF migration is complete and stable
-- Resources available for multi-platform testing
+**Rationale**:
+1. ✅ **Cross-Platform from Day One** - Windows, Linux, macOS native support
+2. ✅ **Modern & Future-Proof** - .NET 6/7/8, actively developed, growing ecosystem
+3. ✅ **Solves All Current Issues** - DPI scaling, modern look, flexible layouts, translation overflow
+4. ✅ **Strategic Positioning** - Greenshot becomes truly cross-platform screenshot tool
+5. ✅ **XAML/MVVM Skills** - Familiar patterns, good tooling (VS Code, Rider)
+6. ✅ **No Future Migration** - Direct to target platform, no interim step needed
 
-This two-phase approach balances immediate needs with long-term vision while minimizing risk and maximizing value delivery.
+**Trade-offs Accepted**:
+- ⚠️ Requires .NET 6+ upgrade (strategic modernization, not a blocker)
+- ⚠️ Complete UI rewrite (no gradual WinForms interop, but cleaner architecture)
+- ⚠️ 35-40 week timeline (vs 27 weeks for WPF, but delivers cross-platform)
+- ⚠️ Multi-platform testing infrastructure needed (investment in quality)
+
+**Why Not WPF**:
+- Windows-only locks Greenshot into single platform
+- Would require another migration to Avalonia later for cross-platform
+- WPF is legacy technology with declining Microsoft investment
+- Double migration effort (WinForms→WPF→Avalonia) vs single (WinForms→Avalonia)
+
+**Implementation Strategy**:
+- Full commitment to Avalonia and .NET 6+
+- Build cross-platform CI/CD from start
+- Test on Windows, Linux (Ubuntu, Fedora), and macOS throughout
+- Deliver a truly modern, cross-platform Greenshot
 
 ## Modern Translation System Recommendations
 
@@ -711,16 +732,27 @@ public class TranslateExtension : MarkupExtension
 - If translators familiar with Poedit
 - Traditional open source approach
 
-## Step-by-Step Migration Plan
+## Step-by-Step Migration Plan (Avalonia-Based)
 
-### Phase 0: Infrastructure Setup (Week 1-2)
+### Updated Timeline for Avalonia Migration
+
+**Total Duration**: 35-40 weeks
+- Includes .NET 6+ upgrade, cross-platform setup, and multi-platform testing
+- All phases designed for Avalonia from the start
+
+### Phase 0: Infrastructure Setup & .NET Upgrade (Week 1-4)
 
 **Tasks**:
 1. ✅ Create migration concept document (this document)
-2. Create new project structure:
+2. **Upgrade to .NET 6+**:
+   - Update solution to .NET 6 or .NET 7 (LTS preferred)
+   - Migrate dependencies to .NET 6+ compatible versions
+   - Update build scripts and CI/CD pipelines
+   - Test core functionality on new runtime
+3. Create new Avalonia project structure:
    ```
-   src/Greenshot.UI.Modern/
-     Greenshot.UI.Modern.csproj
+   src/Greenshot.UI.Avalonia/
+     Greenshot.UI.Avalonia.csproj
      Core/
        ModernUIManager.cs       - Manages UI mode selection
        ViewModelBase.cs         - Base class for ViewModels
@@ -730,61 +762,67 @@ public class TranslateExtension : MarkupExtension
        Translations/
          en-US.json
      Converters/
-       (WPF value converters)
+       (Avalonia value converters)
+     Platforms/
+       Windows/
+       Linux/
+       macOS/
    ```
-3. Add configuration flag to `CoreConfiguration.cs`:
+4. **Setup Cross-Platform CI/CD**:
+   - GitHub Actions workflow for Windows builds
+   - Linux build (Ubuntu 22.04)
+   - macOS build (test on macOS 12+)
+   - Automated testing on all three platforms
+5. Add configuration flag to `CoreConfiguration.cs`:
    ```csharp
-   [IniProperty("UseModernUI", Description = "Enable modern WPF UI (experimental)", 
+   [IniProperty("UseAvaloniaUI", Description = "Enable modern Avalonia UI (experimental)", 
                 DefaultValue = "false")]
-   public bool UseModernUI { get; set; }
+   public bool UseAvaloniaUI { get; set; }
    ```
-4. Implement translation system:
+6. Implement translation system:
    - Create JSON translation files for all existing languages
    - Build migration tool: `Tools/XmlToJsonTranslation/`
-   - Create MSBuild task to generate RESX from JSON
-   - Create WPF markup extension for translations
-5. Create UI factory pattern:
-   ```csharp
-   public interface IUIFactory
-   {
-       IAboutDialog CreateAboutDialog();
-       ISettingsDialog CreateSettingsDialog();
-       // ... etc
-   }
-   
-   public class WinFormsUIFactory : IUIFactory { }
-   public class ModernUIFactory : IUIFactory { }
+   - Create Avalonia markup extension for translations
+7. Install Avalonia packages:
+   ```xml
+   <PackageReference Include="Avalonia" Version="11.*" />
+   <PackageReference Include="Avalonia.Desktop" Version="11.*" />
+   <PackageReference Include="Avalonia.Themes.Fluent" Version="11.*" />
+   <PackageReference Include="Avalonia.Fonts.Inter" Version="11.*" />
    ```
 
 **Deliverables**:
-- `Greenshot.UI.Modern` project created
+- .NET 6+ upgraded solution
+- `Greenshot.UI.Avalonia` project created
 - Translation JSON files for all 25+ languages
-- Build process for RESX generation
 - Configuration flag in greenshot.ini
-- UI factory infrastructure
+- Cross-platform CI/CD pipelines
+- Multi-platform testing infrastructure
 
-### Phase 1: About Dialog (Week 3-4) - PILOT
+**Duration**: 4 weeks (includes .NET upgrade and platform setup)
+
+### Phase 1: About Dialog (Week 5-7) - PILOT
 
 **Why Start Here**:
 - ✅ Simple, self-contained dialog
-- ✅ Good visual impact (can showcase modern styling)
+- ✅ Good visual impact (can showcase Avalonia styling)
 - ✅ Low risk - not critical to functionality
-- ✅ Has custom graphics (animated G logo) - good test of WPF capabilities
+- ✅ Tests cross-platform rendering
+- ✅ Has custom graphics (animated G logo) - good test of Avalonia capabilities
 
 **Implementation**:
 
-1. Create `src/Greenshot.UI.Modern/Views/AboutView.xaml`:
+1. Create `src/Greenshot.UI.Avalonia/Views/AboutView.axaml`:
 ```xaml
-<Window x:Class="Greenshot.UI.Modern.Views.AboutView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:Greenshot.UI.Modern"
-        Title="{local:Translate about.title}" 
+        xmlns:local="clr-namespace:Greenshot.UI.Avalonia"
+        x:Class="Greenshot.UI.Avalonia.Views.AboutView"
+        Title="{local:Translate about.title}"
         SizeToContent="WidthAndHeight"
-        ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
-        Background="#FF3D3D3D">
-    <Grid Margin="20">
+        CanResize="False"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="30,20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -792,32 +830,29 @@ public class TranslateExtension : MarkupExtension
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
-        <!-- Logo (can reuse existing animation logic in code-behind) -->
-        <Image Grid.Row="0" x:Name="LogoImage" Width="90" Height="90" 
+        <!-- Logo -->
+        <Image Grid.Row="0" Width="90" Height="90" 
                Margin="0,0,0,20"/>
         
         <!-- Version Info -->
-        <TextBlock Grid.Row="1" x:Name="VersionText" 
-                   FontSize="16" FontWeight="Bold"
-                   Foreground="White" TextAlignment="Center"
-                   Margin="0,0,0,10"/>
+        <TextBlock Grid.Row="1" 
+                   FontSize="18" FontWeight="SemiBold"
+                   TextAlignment="Center"
+                   Margin="0,0,0,20"/>
         
         <!-- Links -->
-        <StackPanel Grid.Row="2" Margin="0,10">
-            <TextBlock Foreground="LightGray">
-                <Hyperlink NavigateUri="https://getgreenshot.org/" 
-                           RequestNavigate="Hyperlink_RequestNavigate"
-                           Foreground="#FF8AFF00">
-                    <Run Text="{local:Translate about.host}"/>
-                </Hyperlink>
+        <StackPanel Grid.Row="2" Margin="0,0,0,10">
+            <TextBlock>
+                <Run Text="{local:Translate about.host}"/>
             </TextBlock>
             <!-- More links... -->
         </StackPanel>
         
         <!-- Close Button -->
-        <Button Grid.Row="3" Content="{local:Translate OK}" 
-                IsDefault="True" Click="CloseButton_Click"
-                Padding="20,5" HorizontalAlignment="Center"
+        <Button Grid.Row="3" 
+                Content="{local:Translate common.close}"
+                HorizontalAlignment="Center"
+                Padding="30,8"
                 Margin="0,20,0,0"/>
     </Grid>
 </Window>
@@ -829,10 +864,10 @@ public class TranslateExtension : MarkupExtension
 private void ShowAboutDialog()
 {
     var conf = IniConfig.GetIniSection<CoreConfiguration>();
-    if (conf.UseModernUI)
+    if (conf.UseAvaloniaUI)
     {
-        var modernAbout = new Greenshot.UI.Modern.Views.AboutView();
-        modernAbout.ShowDialog();
+        var avaloniaAbout = new Greenshot.UI.Avalonia.Views.AboutView();
+        avaloniaAbout.ShowDialog();
     }
     else
     {
@@ -843,94 +878,104 @@ private void ShowAboutDialog()
 ```
 
 **Testing**:
-- Manual testing with `UseModernUI=false` (default, old UI)
-- Manual testing with `UseModernUI=true` (new UI)
+- Manual testing with `UseAvaloniaUI=false` (default, old UI)
+- Manual testing with `UseAvaloniaUI=true` (new UI)
+- **Cross-platform testing**: Windows, Linux (Ubuntu/Fedora), macOS
 - Test with multiple languages
-- Test DPI scaling at 100%, 125%, 150%, 200%
-- Visual comparison screenshots
+- Test DPI scaling at 100%, 125%, 150%, 200%, 300%
+- Visual comparison screenshots on all platforms
 
 **Success Criteria**:
 - ✅ Both UIs work correctly
 - ✅ Switching via config flag works
-- ✅ Modern UI looks better and scales properly
+- ✅ Avalonia UI looks modern and scales properly on all platforms
 - ✅ Translations work in both UIs
+- ✅ Platform-native look and feel (Windows 11, GNOME, macOS)
 - ✅ No impact on users who don't enable flag
 
-### Phase 2: System Tray Context Menu (Week 5-7)
+**Duration**: 3 weeks (includes cross-platform testing)
+
+### Phase 2: System Tray Context Menu (Week 8-12)
 
 **Why Second**:
 - ✅ High-visibility component (used constantly)
 - ✅ Good impact on user experience
-- ✅ Relatively straightforward
+- ✅ Tests cross-platform system tray integration
 - ✅ Tests the pattern for menus
 
 **Challenges**:
-- WPF doesn't have native NotifyIcon support
-- Need third-party library or custom implementation
+- System tray behaves differently on each platform
+- Windows: Native system tray
+- Linux: StatusNotifierItem (GNOME), system tray (KDE/XFCE)
+- macOS: Menu bar app
 
-**Solution**: Use **Hardcodet.NotifyIcon.Wpf** library
-- Mature, well-maintained NuGet package
-- Designed specifically for WPF system tray icons
-- XAML-based context menu definition
+**Solution**: Platform-specific implementations with abstraction layer
 
 **Implementation**:
 
-1. Add NuGet package: `Hardcodet.NotifyIcon.Wpf`
-2. Create `SystemTrayView.xaml`:
-```xaml
-<tb:TaskbarIcon x:Class="Greenshot.UI.Modern.Views.SystemTrayView"
-                xmlns:tb="http://www.hardcodet.net/taskbar"
-                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                xmlns:local="clr-namespace:Greenshot.UI.Modern"
-                IconSource="/Greenshot;component/Resources/icon.ico"
-                ToolTipText="Greenshot">
-    
-    <tb:TaskbarIcon.ContextMenu>
-        <ContextMenu>
-            <MenuItem Header="{local:Translate contextmenu.capturearea}"
-                      Command="{Binding CaptureAreaCommand}">
-                <MenuItem.Icon>
-                    <Image Source="/Resources/region.png"/>
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem Header="{local:Translate contextmenu.capturelastregion}"
-                      Command="{Binding CaptureLastRegionCommand}"/>
-            <!-- ... more menu items ... -->
-            <Separator/>
-            <MenuItem Header="{local:Translate contextmenu.settings}"
-                      Command="{Binding ShowSettingsCommand}"/>
-            <MenuItem Header="{local:Translate contextmenu.about}"
-                      Command="{Binding ShowAboutCommand}"/>
-            <Separator/>
-            <MenuItem Header="{local:Translate contextmenu.exit}"
-                      Command="{Binding ExitCommand}"/>
-        </ContextMenu>
-    </tb:TaskbarIcon.ContextMenu>
-</tb:TaskbarIcon>
+1. Create platform abstraction:
+```csharp
+public interface ITrayIconService
+{
+    void Initialize();
+    void UpdateIcon(string iconPath);
+    void ShowContextMenu();
+    void Dispose();
+}
 ```
 
-3. Create `SystemTrayViewModel.cs` with ICommand implementations
-4. Update `MainForm.cs` to conditionally create WPF or WinForms tray icon
+2. Implement for each platform:
+   - `WindowsTrayIconService.cs` - Native Windows system tray
+   - `LinuxTrayIconService.cs` - StatusNotifierItem via DBus
+   - `MacOSTrayIconService.cs` - NSStatusBar integration
+
+3. Create shared ViewModel:
+```csharp
+public class SystemTrayViewModel : ViewModelBase
+{
+    public ICommand CaptureAreaCommand { get; }
+    public ICommand CaptureLastRegionCommand { get; }
+    public ICommand ShowSettingsCommand { get; }
+    public ICommand ShowAboutCommand { get; }
+    public ICommand ExitCommand { get; }
+    
+    // Platform-specific menu items
+    public ObservableCollection<MenuItemViewModel> MenuItems { get; }
+}
+```
+
+4. Test on all platforms:
+   - Windows: Right-click system tray icon
+   - Linux: Click StatusNotifierItem (GNOME) or system tray (KDE)
+   - macOS: Click menu bar icon
+
+**Duration**: 5 weeks (complex due to platform differences)
+
+**Testing**:
+- All menu items work correctly on all platforms
+- Icons display properly (platform-appropriate size/format)
+- Keyboard shortcuts work
+- Multi-monitor scenarios on all platforms
 
 **Testing**:
 - All menu items work correctly
 - Icons display properly
 - Keyboard shortcuts work
-- Multi-monitor scenarios
-- High DPI displays
+- Multi-monitor scenarios on all platforms
 
-### Phase 3: Settings Dialog (Week 8-12)
+### Phase 3: Settings Dialog (Week 13-19)
 
 **Why Third**:
 - ✅ Most complex dialog - good stress test
 - ✅ High user impact
 - ✅ Currently has many layout issues with translations
+- ✅ Tests Avalonia's layout flexibility
 
 **Challenges**:
 - Large, complex form with multiple tabs
 - Many controls and validation logic
 - Plugin settings integration
+- Platform-specific file dialogs and folder pickers
 
 **Implementation Strategy**:
 
@@ -944,17 +989,17 @@ private void ShowAboutDialog()
      - Plugins
      - Expert
 
-2. **Create modular WPF structure**:
+2. **Create modular Avalonia structure**:
 ```
 Views/
   Settings/
-    SettingsWindow.xaml          (main window with tab control)
-    GeneralTab.xaml               (general settings)
-    CaptureTab.xaml               (capture settings)
-    OutputTab.xaml                (output settings)
-    PrinterTab.xaml               (printer settings)
-    PluginsTab.xaml               (plugin settings)
-    ExpertTab.xaml                (expert settings)
+    SettingsWindow.axaml          (main window with tab control)
+    GeneralTab.axaml               (general settings)
+    CaptureTab.axaml               (capture settings)
+    OutputTab.axaml                (output settings)
+    PrinterTab.axaml               (printer settings)
+    PluginsTab.axaml               (plugin settings)
+    ExpertTab.axaml                (expert settings)
 ViewModels/
   Settings/
     SettingsViewModel.cs          (main VM, coordinates tabs)
@@ -966,13 +1011,14 @@ ViewModels/
     ExpertTabViewModel.cs
 ```
 
-3. **Use WPF data binding**:
+3. **Use Avalonia data binding with FluentTheme**:
 ```xaml
 <!-- Example: General Tab -->
-<UserControl x:Class="Greenshot.UI.Modern.Views.Settings.GeneralTab">
-    <StackPanel Margin="10">
+<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Greenshot.UI.Avalonia.Views.Settings.GeneralTab">
+    <StackPanel Margin="10" Spacing="10">
         <!-- Language Selection -->
-        <Label Content="{local:Translate settings.language}"/>
+        <TextBlock Text="{local:Translate settings.language}"/>
         <ComboBox ItemsSource="{Binding AvailableLanguages}"
                   SelectedItem="{Binding SelectedLanguage}"
                   DisplayMemberPath="Description"/>
@@ -986,24 +1032,32 @@ ViewModels/
 </UserControl>
 ```
 
-4. **Validation with IDataErrorInfo**:
+4. **Platform-specific file dialogs**:
 ```csharp
-public class CaptureTabViewModel : ViewModelBase, IDataErrorInfo
+// Abstract file dialog service
+public interface IFileDialogService
 {
-    private int _captureDelay;
-    
-    public int CaptureDelay
-    {
-        get => _captureDelay;
-        set
-        {
-            if (_captureDelay != value)
-            {
-                _captureDelay = value;
-                OnPropertyChanged();
-            }
-        }
-    }
+    Task<string> OpenFileDialogAsync();
+    Task<string> SaveFileDialogAsync();
+    Task<string> SelectFolderDialogAsync();
+}
+
+// Platform implementations use native dialogs
+// Windows: Windows.Storage
+// Linux: GTK file chooser via DBus
+// macOS: NSOpenPanel/NSSavePanel
+```
+
+**Duration**: 7 weeks (includes extensive cross-platform testing)
+
+**Testing**:
+- All settings save/load correctly on all platforms
+- Validation works
+- Plugin settings integration
+- Multi-language testing
+- DPI scaling on all platforms
+- Tab navigation and keyboard shortcuts
+- Platform-native file dialogs
     
     public string this[string columnName]
     {
@@ -1117,14 +1171,15 @@ Add new configuration section and properties:
 
 ```ini
 [Core]
-; Enable modern WPF UI (false = classic Windows Forms UI)
+; Enable cross-platform Avalonia UI (false = classic Windows Forms UI)
 ; During migration phases 1-7, this defaults to false
 ; After Phase 8, this defaults to true
 ; Old UI will be removed in a future release
-UseModernUI=false
+UseAvaloniaUI=false
 
-; UI Theme for modern UI (light, dark, auto)
-; Only applies when UseModernUI=true
+; UI Theme for Avalonia UI (light, dark, auto)
+; Only applies when UseAvaloniaUI=true
+; auto = follows system theme (Windows 11, GNOME, macOS)
 UITheme=auto
 
 ; Translation format (xml, json)
@@ -1142,13 +1197,13 @@ public class CoreConfiguration : IniSection
 {
     // ... existing properties ...
     
-    [IniProperty("UseModernUI", 
-        Description = "Enable modern WPF UI. false = Windows Forms (classic), true = WPF (modern)",
+    [IniProperty("UseAvaloniaUI", 
+        Description = "Enable cross-platform Avalonia UI. false = Windows Forms (classic), true = Avalonia (modern, cross-platform)",
         DefaultValue = "false")]  // Will change to "true" in Phase 8
-    public bool UseModernUI { get; set; }
+    public bool UseAvaloniaUI { get; set; }
     
     [IniProperty("UITheme",
-        Description = "UI theme for modern UI: light, dark, auto (follows system)",
+        Description = "UI theme for Avalonia UI: light, dark, auto (follows system)",
         DefaultValue = "auto")]
     public UITheme Theme { get; set; }
     
@@ -1174,10 +1229,10 @@ public enum TranslationFormat
 
 ### UI Mode Selection Logic
 
-**Location**: `src/Greenshot.UI.Modern/Core/ModernUIManager.cs`
+**Location**: `src/Greenshot.UI.Avalonia/Core/AvaloniaUIManager.cs`
 
 ```csharp
-public static class ModernUIManager
+public static class AvaloniaUIManager
 {
     private static CoreConfiguration _config;
     
@@ -1186,13 +1241,13 @@ public static class ModernUIManager
         _config = IniConfig.GetIniSection<CoreConfiguration>();
     }
     
-    public static bool IsModernUIEnabled => _config?.UseModernUI ?? false;
+    public static bool IsAvaloniaUIEnabled => _config?.UseAvaloniaUI ?? false;
     
     public static void ShowAboutDialog()
     {
-        if (IsModernUIEnabled)
+        if (IsAvaloniaUIEnabled)
         {
-            var dialog = new Greenshot.UI.Modern.Views.AboutView();
+            var dialog = new Greenshot.UI.Avalonia.Views.AboutView();
             dialog.ShowDialog();
         }
         else
@@ -1401,56 +1456,71 @@ dotnet run -- --source ../../src/Greenshot/Languages --target ../../src/Greensho
 - ✅ Focus on solving current problems first
 - ✅ Document cross-platform as future consideration
 
-## Timeline Summary
+## Timeline Summary (Avalonia Migration)
 
 | Phase | Duration | Component | Complexity |
 |-------|----------|-----------|------------|
-| 0 | 2 weeks | Infrastructure Setup | Medium |
-| 1 | 2 weeks | About Dialog | Low |
-| 2 | 3 weeks | System Tray Context Menu | Medium |
-| 3 | 5 weeks | Settings Dialog | High |
-| 4 | 1 week | Language Selection Dialog | Low |
-| 5 | 2 weeks | Capture-Related Dialogs | Medium |
-| 6 | 3 weeks | Plugin Settings Forms | Medium |
-| 7 | 7 weeks | Image Editor | Very High |
-| 8 | 2+ weeks | Final Cutover & Testing | High |
-| **Total** | **27+ weeks** | **Complete Migration** | **~6-7 months** |
+| 0 | 4 weeks | Infrastructure Setup + .NET 6+ Upgrade | High |
+| 1 | 3 weeks | About Dialog (Cross-platform) | Low-Medium |
+| 2 | 5 weeks | System Tray Context Menu (Platform-specific) | High |
+| 3 | 7 weeks | Settings Dialog | High |
+| 4 | 2 weeks | Language Selection Dialog | Low |
+| 5 | 3 weeks | Capture-Related Dialogs | Medium |
+| 6 | 4 weeks | Plugin Settings Forms | Medium |
+| 7 | 10 weeks | Image Editor | Very High |
+| 8 | 3+ weeks | Final Cutover & Cross-Platform Testing | High |
+| **Total** | **35-40 weeks** | **Complete Cross-Platform Migration** | **~8-10 months** |
 
-**Note**: Timeline assumes one developer working part-time. Can be accelerated with multiple contributors.
+**Note**: Timeline assumes one developer working part-time. Can be accelerated with multiple contributors. Includes .NET upgrade, cross-platform development, and multi-platform testing throughout.
+
+**Additional Requirements**:
+- CI/CD pipelines for Windows, Linux, macOS
+- Test devices/VMs for all platforms
+- macOS Developer account for code signing
+- Understanding of platform-specific behaviors
 
 ## Success Metrics
 
 ### Quantitative Metrics
 
-1. **DPI Scaling**: UI renders correctly at 100%, 125%, 150%, 200%, 300% without clipping
+1. **DPI Scaling**: UI renders correctly at 100%, 125%, 150%, 200%, 300% without clipping on all platforms
 2. **Translation Coverage**: All 25+ languages migrated successfully
-3. **Performance**: Startup time < 2 seconds (same or better than WinForms)
-4. **Memory**: Memory usage < 100MB baseline (same or better)
-5. **Bug Reports**: < 10 critical bugs reported in first month after launch
+3. **Performance**: Startup time < 2 seconds on all platforms (same or better than WinForms)
+4. **Memory**: Memory usage < 100MB baseline on all platforms
+5. **Bug Reports**: < 10 critical bugs reported per platform in first month after launch
+6. **Platform Coverage**: Successfully runs on Windows 10/11, Ubuntu 22.04+, Fedora 38+, macOS 12+
 
 ### Qualitative Metrics
 
-1. **User Feedback**: Positive sentiment on modern look and feel
-2. **Contributor Feedback**: Developers find WPF easier to work with
+1. **User Feedback**: Positive sentiment on modern look and cross-platform availability
+2. **Contributor Feedback**: Developers find Avalonia and cross-platform development manageable
 3. **Translator Feedback**: JSON format easier to work with than XML
-4. **Accessibility**: Screen reader users report improved experience
+4. **Accessibility**: Screen reader users report improved experience on all platforms
+5. **Platform Integration**: Feels native on each platform (Windows 11 style, GNOME/KDE integration, macOS design)
 
 ## Conclusion
 
-This migration plan provides a **low-risk, incremental path** to modernize Greenshot's UI while maintaining full backward compatibility. By leveraging WPF (already proven in the Confluence plugin), we can deliver significant improvements to users without requiring a .NET version upgrade or massive architectural changes.
+This migration plan provides a **strategic path** to modernize Greenshot's UI and make it truly cross-platform using Avalonia UI. By committing to cross-platform from the start, we avoid the need for future migration and position Greenshot for growth across Windows, Linux, and macOS.
 
-The gradual, opt-in approach ensures that:
-- ✅ Users are not disrupted during migration
-- ✅ Each component can be thoroughly tested before release
-- ✅ Team can learn WPF incrementally
-- ✅ Risk is minimized at each step
-- ✅ Value is delivered early (About dialog, context menu)
+The approach ensures that:
+- ✅ Greenshot becomes cross-platform from day one of modern UI launch
+- ✅ Single migration effort (WinForms → Avalonia) vs double migration (WinForms → WPF → Avalonia)
+- ✅ Modern technology stack with .NET 6+ and actively developed framework
+- ✅ Each component can be thoroughly tested on all platforms before release
+- ✅ Users on all platforms benefit from modern UI, not just Windows users
+- ✅ Future-proof architecture with no need for another UI migration
 
-**Recommendation**: Approve and begin with Phase 0 (Infrastructure Setup) and Phase 1 (About Dialog) as a pilot to validate the approach.
+**Trade-offs Accepted**:
+- ⚠️ Longer timeline (35-40 weeks vs 27 weeks for WPF-only)
+- ⚠️ .NET 6+ upgrade required (strategic modernization)
+- ⚠️ More complex testing infrastructure (multi-platform CI/CD)
+- ⚠️ Platform-specific code for system integration
+
+**Recommendation**: Approve Avalonia-based migration and begin with Phase 0 (Infrastructure + .NET Upgrade) to establish the foundation for cross-platform development.
 
 ---
 
-**Document Version**: 1.0  
+**Document Version**: 2.0 (Updated for Avalonia)
 **Date**: January 2026  
 **Author**: GitHub Copilot  
-**Status**: Proposal - Awaiting Review
+**Status**: Updated per stakeholder preference for cross-platform support
