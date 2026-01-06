@@ -732,6 +732,263 @@ public class TranslateExtension : MarkupExtension
 - If translators familiar with Poedit
 - Traditional open source approach
 
+## .NET 6+ Upgrade Analysis
+
+### Current State Assessment
+
+**Current Target Framework**: .NET Framework 4.7.2
+- All projects currently target `net472` (defined in `Directory.Build.props`)
+- Uses `Microsoft.NET.Sdk.WindowsDesktop` SDK
+- Includes both WPF and Windows Forms support
+
+### Breaking Changes & Migration Challenges
+
+#### 1. **BinaryFormatter Deprecation** ⚠️ HIGH IMPACT
+
+**Issue**: BinaryFormatter is obsolete and throws exceptions in .NET 6+ due to security concerns.
+
+**Current Usage in Greenshot**:
+- **File**: `Greenshot.Editor/Helpers/BinaryFormatterHelper.cs` - Used for `.greenshot` file serialization
+- **Impact**: Cannot load/save editor files created with older versions
+- **Affected Features**: 
+  - Loading annotated screenshots from `.greenshot` files
+  - Editor state persistence
+  - Drawing container serialization (~20+ container types)
+
+**Migration Path**:
+```csharp
+// Current (won't work in .NET 6+)
+BinaryFormatter formatter = new BinaryFormatter();
+formatter.Serialize(stream, drawingContainers);
+
+// Migration options:
+// Option A: System.Text.Json (recommended)
+JsonSerializer.Serialize(stream, drawingContainers, options);
+
+// Option B: Protobuf-net (binary format, better compatibility)
+ProtoBuf.Serializer.Serialize(stream, drawingContainers);
+```
+
+**Effort Estimate**: 3-5 days
+- Create new serialization layer
+- Implement backward compatibility to read old .greenshot files
+- Test with existing editor files
+
+#### 2. **System.Drawing.Common on Linux/macOS** ⚠️ HIGH IMPACT
+
+**Issue**: System.Drawing.Common only supported on Windows in .NET 6+. Throws PlatformNotSupportedException on Linux/macOS.
+
+**Current Usage**: EXTENSIVE (108 usages)
+- Core screenshot manipulation
+- Image processing
+- Windows Forms controls (icons, bitmaps)
+- GDI+ operations
+
+**Migration Path for Avalonia**:
+- Use **SkiaSharp** or **ImageSharp** for cross-platform image operations
+- Avalonia has built-in cross-platform rendering (doesn't use System.Drawing)
+- Keep System.Drawing for WinForms compatibility during migration
+
+**Effort Estimate**: Built into Avalonia transition (no extra work if using Avalonia)
+
+#### 3. **App.config Changes**
+
+**Current App.config** (`src/Greenshot/App.config`):
+```xml
+<configuration>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.7.2" />
+  </startup>
+  <System.Windows.Forms.ApplicationConfigurationSection>
+    <add key="DpiAwareness" value="PerMonitorV2" />
+  </System.Windows.Forms.ApplicationConfigurationSection>
+</configuration>
+```
+
+**Migration**:
+- .NET 6+ uses `runtimeconfig.json` instead of app.config
+- DPI awareness configured differently (via application manifest or code)
+- Assembly binding redirects mostly unnecessary
+
+**Effort Estimate**: 1 day (straightforward)
+
+#### 4. **NuGet Package Compatibility**
+
+**Current Packages Requiring Updates**:
+
+| Package | Current | .NET 6+ Status | Action Needed |
+|---------|---------|----------------|---------------|
+| log4net | 2.0.15 | ✅ Compatible | No change |
+| Dapplo.* libraries | 1.0.28 | ⚠️ Check compatibility | May need updates |
+| HtmlAgilityPack | 1.11.46 | ✅ Compatible | No change |
+| Svg | 3.4.3 | ⚠️ May need update | Test compatibility |
+| Microsoft Office Interop | 15.0.x | ⚠️ COM interop | Test on .NET 6+ |
+
+**Effort Estimate**: 2-3 days (testing and updating packages)
+
+#### 5. **Windows Forms in .NET 6+**
+
+**Status**: ✅ Fully supported (Windows-only)
+
+**Changes**:
+- Still uses `Microsoft.NET.Sdk` (not WindowsDesktop in .NET 6+)
+- Most WinForms code will work unchanged
+- Some designer-generated code may need regeneration
+
+**Migration**:
+```xml
+<!-- Old (.NET Framework 4.7.2) -->
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+</Project>
+
+<!-- New (.NET 6+) -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+</Project>
+```
+
+**Effort Estimate**: 1-2 days (bulk find/replace in .csproj files)
+
+#### 6. **Runtime Serialization** ⚠️ MEDIUM IMPACT
+
+**Current Usage**: ~55 instances of Serializable/ISerializable attributes
+
+**Files Affected**:
+- Configuration classes (IniFile system)
+- Plugin configurations
+- Data transfer objects
+
+**Issue**: [Serializable] still works but BinaryFormatter doesn't
+- Need to ensure using JSON or other serializers, not BinaryFormatter
+
+**Effort Estimate**: Already addressed by BinaryFormatter migration
+
+#### 7. **COM Interop (Office Plugin)**
+
+**Current**: Office plugin uses COM interop for Word, Excel, PowerPoint, Outlook, OneNote
+
+**Status in .NET 6+**: ✅ Supported via COM references
+
+**Risk**: LOW - Should work with minimal changes
+- Test on .NET 6+ runtime
+- Ensure Office is installed on test machines
+
+**Effort Estimate**: 1 day (testing)
+
+### Summary of Breaking Changes
+
+| Area | Impact | Effort | Mitigation |
+|------|--------|--------|------------|
+| **BinaryFormatter** | ❌ High | 3-5 days | Migrate to System.Text.Json |
+| **System.Drawing on Linux/macOS** | ❌ High | 0 days* | Use Avalonia (handles it) |
+| **App.config** | ⚠️ Medium | 1 day | Convert to runtimeconfig.json |
+| **NuGet packages** | ⚠️ Medium | 2-3 days | Update and test |
+| **WinForms compatibility** | ✅ Low | 1-2 days | Update project files |
+| **COM Interop** | ✅ Low | 1 day | Testing only |
+
+*Avalonia uses SkiaSharp internally, so System.Drawing issues don't apply
+
+**Total .NET 6 Upgrade Effort**: 8-13 days of development work
+
+### Migration Strategy for .NET 6+
+
+**Recommended Approach**: Incremental upgrade
+
+1. **Week 1-2: Core Framework Upgrade**
+   - Update `Directory.Build.props` to target `net6.0-windows` for WinForms projects
+   - Update NuGet packages to .NET 6+ compatible versions
+   - Regenerate auto-generated code (designer files)
+   - Fix compilation errors
+
+2. **Week 3: Binary Serialization Migration**
+   - Replace BinaryFormatter with System.Text.Json
+   - Implement backward compatibility for reading old .greenshot files
+   - Add migration tool to convert old files
+
+3. **Week 4: Testing & Validation**
+   - Test all core functionality on .NET 6+ runtime
+   - Verify plugin compatibility
+   - Test Office integration
+   - Cross-platform smoke tests (if applicable)
+
+### .NET 6 vs .NET 7 vs .NET 8
+
+**Recommendation**: .NET 8 (LTS, released Nov 2023)
+
+| Version | Release | Support Until | Recommendation |
+|---------|---------|---------------|----------------|
+| .NET 6 | Nov 2021 | Nov 2024 | ⚠️ Support ending soon |
+| .NET 7 | Nov 2022 | May 2024 | ❌ Already EOL |
+| **✅ .NET 8** | **Nov 2023** | **Nov 2026** | **Recommended (LTS)** |
+
+**Why .NET 8**:
+- Long-term support (3 years)
+- Latest performance improvements
+- Better Avalonia support
+- No reason to start with older version
+
+### Risk Assessment
+
+**Low Risk** ✅:
+- Windows Forms compatibility (well supported in .NET 6+)
+- Most NuGet packages (already .NET 6+ compatible)
+- COM interop (tested and working)
+
+**Medium Risk** ⚠️:
+- Dapplo libraries compatibility (need to verify)
+- Office plugin on .NET 6+ (requires testing)
+- Build system changes (MSBuild tasks, InnoSetup)
+
+**High Risk** ❌:
+- BinaryFormatter removal (requires code changes)
+- Existing .greenshot file compatibility (must maintain)
+
+### Mitigation for High Risks
+
+**BinaryFormatter Migration**:
+1. Implement new JSON-based serialization
+2. Keep old BinaryFormatter code for reading legacy files
+3. Suppress obsoletion warnings for backward compatibility code
+4. Provide migration tool for users to convert old files
+
+**File Compatibility**:
+```csharp
+// Hybrid approach
+public void LoadGreenshotFile(string path)
+{
+    try
+    {
+        // Try new JSON format first
+        return LoadFromJson(path);
+    }
+    catch
+    {
+        // Fallback to legacy BinaryFormatter (with warning suppression)
+        #pragma warning disable SYSLIB0011
+        return LoadFromBinaryFormatter(path);
+        #pragma warning restore SYSLIB0011
+    }
+}
+```
+
+### Timeline Impact on Avalonia Migration
+
+**Phase 0 Updated Estimate**: 4 weeks
+
+- Week 1-2: .NET 8 upgrade and package updates
+- Week 3: Binary serialization migration
+- Week 4: Cross-platform CI/CD setup for Avalonia
+
+**No change to overall timeline** - This was already budgeted in the 4-week Phase 0 estimate.
+
 ## Step-by-Step Migration Plan (Avalonia-Based)
 
 ### Updated Timeline for Avalonia Migration
