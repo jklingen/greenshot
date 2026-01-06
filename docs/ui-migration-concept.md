@@ -130,90 +130,283 @@ conf.Language = "de-DE";
 5. **Accessibility**: Limited support for screen readers and accessibility features
 6. **Cross-platform**: Windows Forms is Windows-only
 
-## Technology Recommendations
+## Technology Recommendations - Comprehensive Analysis
 
-### Option 1: WPF (Windows Presentation Foundation) ⭐ RECOMMENDED
+This section provides an objective comparison of modern UI frameworks for Greenshot's migration, evaluating each option against key criteria: cross-platform support, migration effort, maturity, and long-term viability.
 
-**Pros**:
-- ✅ **Already in use** in Confluence plugin - proven compatibility
-- ✅ **Native .NET Framework 4.7.2** support - no version upgrade needed
-- ✅ **Mature and stable** - 15+ years of production use
-- ✅ **Excellent DPI scaling** - built-in high-DPI support
-- ✅ **XAML declarative UI** - separation of concerns
-- ✅ **Rich styling** - themes, templates, animations
-- ✅ **Data binding** - reduces boilerplate code
-- ✅ **Designer support** - Visual Studio XAML designer
-- ✅ **Side-by-side with WinForms** - can mix technologies during migration
-- ✅ **Large community** - extensive resources and libraries
-- ✅ **Accessibility** - built-in UI Automation support
+### Evaluation Criteria
 
-**Cons**:
-- ❌ **Windows-only** - no cross-platform support
-- ❌ **Learning curve** - XAML and MVVM pattern
-- ❌ **Not "modern"** - Microsoft focus is on newer technologies
+Before diving into specific technologies, let's establish the evaluation criteria:
 
-**Migration Complexity**: LOW - We already have working examples in the codebase
+1. **Cross-Platform Support** - Can it run on Windows, Linux, macOS?
+2. **Migration Complexity** - Effort required to migrate from WinForms
+3. **Framework Requirements** - Does it require .NET upgrade?
+4. **Maturity & Stability** - Production-ready? Large ecosystem?
+5. **Performance** - Suitable for desktop screenshot tool?
+6. **Developer Experience** - Tooling, debugging, documentation
+7. **Future-Proofing** - Active development, long-term support
+8. **Gradual Migration** - Can it coexist with WinForms during migration?
 
-### Option 2: Avalonia UI
+### Option 1: Avalonia UI
+
+**Overview**: Modern, cross-platform XAML-based UI framework inspired by WPF, supporting Windows, Linux, macOS, iOS, Android, and WebAssembly.
 
 **Pros**:
-- ✅ **Cross-platform** - Windows, Linux, macOS
-- ✅ **XAML-based** - similar to WPF, easier for team to learn
-- ✅ **Modern** - actively developed
-- ✅ **.NET Standard/Core** - future-proof
-- ✅ **Good styling** - flexible theming
+- ✅ **True Cross-Platform** - Native apps on Windows, Linux (X11/Wayland), macOS
+- ✅ **XAML/MVVM** - Familiar pattern for .NET developers, similar to WPF
+- ✅ **Modern & Actively Developed** - Regular releases, growing community
+- ✅ **Excellent DPI Scaling** - Built-in support across all platforms
+- ✅ **Flexible Styling** - FluentTheme, Material Design, custom themes
+- ✅ **Future-Proof** - .NET 6/7/8 support, modern C# features
+- ✅ **Good Documentation** - Comprehensive guides and samples
+- ✅ **Open Source** - MIT license, community-driven
+- ✅ **VS Code & Rider Support** - XAML previewer, hot reload
+- ✅ **Native Look** - Can adapt to platform conventions (Windows 11, macOS)
 
 **Cons**:
-- ❌ **Requires .NET upgrade** - needs .NET 6+ for best experience
-- ❌ **Less mature** - smaller ecosystem than WPF
-- ❌ **Migration effort** - larger codebase changes
-- ❌ **No proven use** - not currently in Greenshot
-- ❌ **Designer limitations** - tooling not as mature
+- ❌ **Requires .NET Upgrade** - Best with .NET 6+, though .NET Framework 4.6.1+ supported
+- ❌ **Smaller Ecosystem** - Fewer third-party controls vs WPF (but growing)
+- ❌ **Migration Effort** - All UI code needs rewriting (though XAML is similar to WPF)
+- ❌ **No Interop with WinForms** - Cannot mix Avalonia and WinForms in same app
+- ❌ **Learning Curve** - Platform differences (Linux/macOS) require testing
+- ❌ **Designer Maturity** - Visual Studio designer not as mature as WPF's
+- ❌ **Some WPF Features Missing** - Not 100% WPF-compatible (e.g., 3D, some controls)
 
-**Migration Complexity**: HIGH - Requires .NET version upgrade and significant architectural changes
+**Migration Complexity**: **HIGH**
+- Requires .NET version upgrade (4.7.2 → .NET 6+)
+- Complete UI rewrite - cannot gradually migrate
+- Must handle platform-specific behaviors (file dialogs, system tray on Linux/macOS)
+- Testing required on all target platforms
 
-### Option 3: MAUI (Multi-platform App UI)
+**Cross-Platform Considerations**:
+- **Linux**: Needs X11/Wayland, testing on various distros (Ubuntu, Fedora, etc.)
+- **macOS**: Requires macOS-specific builds, notarization for distribution
+- **System Tray**: Works differently on each platform (need abstraction)
+- **Keyboard Shortcuts**: Platform conventions differ (Ctrl vs Cmd)
+
+**Timeline Impact**: 
+- Infrastructure: +2-3 weeks (setup .NET 6+, CI/CD for multi-platform)
+- Per Component: +30-50% time (cross-platform testing, platform-specific code)
+- Total: ~35-40 weeks vs 27 weeks for WPF
+
+**Best For**: Projects ready to commit to cross-platform support NOW and accept the .NET upgrade
+
+### Option 2: WPF (Windows Presentation Foundation)
+
+**Overview**: Microsoft's mature, Windows-only UI framework with XAML and extensive tooling support.
 
 **Pros**:
-- ✅ **Cross-platform** - Windows, Android, iOS, macOS
-- ✅ **Microsoft official** - successor to Xamarin.Forms
-- ✅ **Modern** - latest Microsoft technology
+- ✅ **Already Proven in Greenshot** - Confluence plugin uses WPF successfully
+- ✅ **No .NET Upgrade** - Works with current .NET Framework 4.7.2
+- ✅ **Mature & Stable** - 15+ years of production use, extensive ecosystem
+- ✅ **Excellent Tooling** - Visual Studio designer, XAML IntelliSense, hot reload
+- ✅ **Rich Control Library** - Thousands of third-party controls (DevExpress, Telerik, etc.)
+- ✅ **Gradual Migration** - Can run side-by-side with WinForms
+- ✅ **Excellent DPI Scaling** - Per-monitor DPI awareness built-in
+- ✅ **Large Community** - Massive StackOverflow presence, tutorials, samples
+- ✅ **Performance** - Hardware-accelerated rendering
+- ✅ **Accessibility** - Full UI Automation support
+- ✅ **XAML Skills Transferable** - Similar to Avalonia, UWP, MAUI
 
 **Cons**:
-- ❌ **Requires .NET 6+** - complete framework upgrade
-- ❌ **Desktop support immature** - mobile-first focus
-- ❌ **Not suitable for desktop tools** - better for consumer apps
-- ❌ **Massive migration effort** - complete rewrite
-- ❌ **Overkill** - Greenshot doesn't need mobile support
+- ❌ **Windows-Only** - No Linux or macOS support
+- ❌ **Legacy Technology** - Microsoft focus on newer frameworks (MAUI, WinUI 3)
+- ❌ **No Future .NET Core Support** - Stays on .NET Framework (Windows-only)
+- ❌ **Themes Look Dated** - Default controls have Windows 7/8 appearance
+- ❌ **No Built-in Modern Controls** - Need third-party libs for hamburger menus, etc.
 
-**Migration Complexity**: VERY HIGH - Not recommended for desktop screenshot tool
+**Migration Complexity**: **LOW**
+- No framework upgrade required
+- Gradual component-by-component migration possible
+- WinForms and WPF can coexist in same application
+- Existing Confluence plugin serves as reference implementation
 
-### Option 4: Blazor Hybrid
+**Timeline Impact**:
+- Follows planned 27-week timeline
+- Infrastructure: 2 weeks
+- Components: As planned (About: 2w, Settings: 5w, etc.)
+
+**Future Cross-Platform Path**:
+- WPF XAML knowledge transfers well to Avalonia
+- UI structure/MVVM patterns reusable
+- Future migration to Avalonia would be easier than WinForms → Avalonia
+
+**Best For**: Projects prioritizing quick migration, low risk, Windows-only for now
+
+### Option 3: .NET MAUI (Multi-platform App UI)
+
+**Overview**: Microsoft's latest cross-platform framework, successor to Xamarin.Forms, targeting mobile and desktop.
 
 **Pros**:
-- ✅ **Web technologies** - HTML/CSS/JavaScript
-- ✅ **Cross-platform** - via WebView2
-- ✅ **Modern** - cutting edge
+- ✅ **Official Microsoft** - Long-term support guaranteed
+- ✅ **Cross-Platform** - Windows, macOS, iOS, Android, Samsung Tizen
+- ✅ **Modern .NET** - .NET 6/7/8, latest C# features
+- ✅ **XAML-Based** - Familiar to WPF developers
+- ✅ **Hot Reload** - Fast development iteration
+- ✅ **Single Project** - Share code and UI across platforms
 
 **Cons**:
-- ❌ **Not suitable for desktop apps** - web-based approach
-- ❌ **Performance concerns** - screenshot tool needs native performance
-- ❌ **WebView2 dependency** - additional runtime requirement
-- ❌ **Wrong tool for job** - desktop native is better for this use case
+- ❌ **Requires .NET 6+** - Complete framework upgrade
+- ❌ **Desktop Support Immature** - Primarily designed for mobile apps
+- ❌ **Not Ideal for Desktop Tools** - Better for consumer apps than productivity tools
+- ❌ **Limited Desktop Controls** - Focused on mobile-style UI patterns
+- ❌ **No WinForms Interop** - Cannot gradual migrate
+- ❌ **Linux Not Officially Supported** - Community effort only
+- ❌ **Different XAML** - Not compatible with WPF/Avalonia XAML
+- ❌ **System Tray Limited** - Not a first-class scenario
+- ❌ **Massive Migration** - Complete application rewrite
 
-**Migration Complexity**: VERY HIGH - Not recommended
+**Migration Complexity**: **VERY HIGH**
+- Requires .NET 6+ upgrade
+- Complete UI and architecture rewrite
+- Mobile-first patterns don't fit screenshot tool
+- System tray, global hotkeys need platform-specific code
 
-### Recommendation: WPF
+**Timeline Impact**: ~50-60 weeks (double the WPF timeline)
 
-**Rationale**:
-1. ✅ **Minimal risk** - Already proven to work (Confluence plugin)
-2. ✅ **No framework upgrade** - Works with current .NET Framework 4.7.2
-3. ✅ **Gradual migration** - Can coexist with Windows Forms
-4. ✅ **Team familiarity** - Code already exists in the project as reference
-5. ✅ **Solves core issues** - DPI scaling, modern look, flexible layouts
-6. ✅ **Fastest path to value** - Lowest migration effort
+**Best For**: Mobile-first apps or apps targeting mobile + desktop equally. Not recommended for Greenshot.
 
-**Future-proofing Note**: When Greenshot is ready for cross-platform (future release), WPF XAML skills and UI structure will translate well to Avalonia UI, making a later cross-platform migration easier.
+### Option 4: Uno Platform
+
+**Overview**: Cross-platform UI framework that runs on Windows, Linux, macOS, iOS, Android, and WebAssembly using WinUI/UWP XAML.
+
+**Pros**:
+- ✅ **True Cross-Platform** - Most platforms of any framework (incl. WebAssembly)
+- ✅ **WinUI XAML** - Microsoft's latest XAML flavor
+- ✅ **Pixel-Perfect** - Same UI on all platforms
+- ✅ **Good Documentation** - Extensive guides
+- ✅ **Active Development** - Frequent releases
+
+**Cons**:
+- ❌ **Requires .NET 6+** - Framework upgrade needed
+- ❌ **WinUI XAML** - Different from WPF XAML (less transferable)
+- ❌ **Smaller Community** - Less mature than Avalonia or WPF
+- ❌ **Desktop Not Primary Focus** - More emphasis on mobile/web
+- ❌ **No WinForms Interop** - No gradual migration
+- ❌ **Complex Build Setup** - Multiple platform targets
+
+**Migration Complexity**: **VERY HIGH**
+
+**Best For**: Apps needing WebAssembly support or pixel-perfect UI across all platforms. Not recommended for Greenshot.
+
+### Option 5: Electron.NET
+
+**Overview**: Use web technologies (HTML/CSS/JavaScript or Blazor) with .NET backend in cross-platform desktop app.
+
+**Pros**:
+- ✅ **Cross-Platform** - Windows, Linux, macOS
+- ✅ **Web Technologies** - Familiar to web developers
+- ✅ **Rich Ecosystem** - npm packages available
+
+**Cons**:
+- ❌ **Large Footprint** - Bundles Chromium (~100MB+ base size)
+- ❌ **Memory Intensive** - Not suitable for lightweight tools
+- ❌ **Startup Performance** - Slower than native
+- ❌ **Not Native Feel** - Web-based UI
+- ❌ **Wrong Paradigm** - Screenshot tool needs native integration
+- ❌ **Massive Rewrite** - Complete change in architecture
+
+**Migration Complexity**: **VERY HIGH**
+
+**Best For**: Web apps that need desktop packaging. Not recommended for Greenshot.
+
+### Comparison Matrix
+
+| Criteria | Avalonia | WPF | MAUI | Uno Platform | Electron.NET |
+|----------|----------|-----|------|--------------|--------------|
+| **Cross-Platform** | ⭐⭐⭐⭐⭐ | ❌ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Migration Complexity** | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ |
+| **No .NET Upgrade** | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **Maturity** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
+| **Performance** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ |
+| **Tooling** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Gradual Migration** | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **Desktop-Focused** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
+| **Timeline (weeks)** | 35-40 | 27 | 50-60 | 50-60 | 60+ |
+| **Community Size** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+
+### Decision Framework
+
+**Choose WPF if:**
+- ✅ Windows-only support acceptable for now
+- ✅ Want fastest migration with lowest risk
+- ✅ Need to stay on .NET Framework 4.7.2
+- ✅ Want gradual, component-by-component migration
+- ✅ Cross-platform is a future consideration, not immediate need
+
+**Choose Avalonia if:**
+- ✅ Cross-platform support is essential NOW
+- ✅ Ready to upgrade to .NET 6+ (accept the migration cost)
+- ✅ Can commit to full UI rewrite (no gradual migration)
+- ✅ Want modern, actively developed framework
+- ✅ Can accept longer timeline (~35-40 weeks)
+- ✅ Have resources to test on Linux/macOS
+
+**Don't Choose MAUI/Uno/Electron.NET** - Not suitable for desktop screenshot tools
+
+### Recommended Approach: Two-Phase Strategy
+
+Given the tension between quick migration and cross-platform future, consider this pragmatic approach:
+
+#### **Phase A: WPF Migration (Now - 27 weeks)**
+1. Migrate to WPF using documented 8-phase plan
+2. Solve immediate issues (DPI scaling, modern look, translations)
+3. Gain XAML/MVVM experience with low risk
+4. Deliver value to users quickly
+5. Stay on .NET Framework 4.7.2
+
+#### **Phase B: Avalonia Migration (Future - When Ready)**
+1. Upgrade to .NET 6+ (done as separate effort)
+2. Migrate from WPF to Avalonia (much easier than WinForms → Avalonia)
+3. XAML and MVVM patterns transfer directly
+4. UI structure already modern and well-organized
+5. Enable Linux/macOS support
+
+**Why This Works**:
+- ✅ Solves current problems immediately with low risk
+- ✅ Doesn't block future cross-platform (makes it easier, actually)
+- ✅ WPF → Avalonia is much easier than WinForms → Avalonia
+- ✅ XAML skills are 80% transferable between WPF and Avalonia
+- ✅ Spreads migration cost over time
+- ✅ Allows .NET upgrade to be planned separately
+- ✅ Validates MVVM architecture before committing to Avalonia
+
+### Alternative: Direct to Avalonia
+
+**If cross-platform is critical now**, skip WPF and go directly to Avalonia:
+
+**Updated Timeline**: ~35-40 weeks
+- Phase 0: Infrastructure + .NET upgrade (4 weeks)
+- Phase 1: About Dialog (3 weeks - includes cross-platform testing)
+- Phase 2: System Tray (5 weeks - Linux/macOS tray differs significantly)
+- Phase 3: Settings (7 weeks - platform-specific file dialogs, etc.)
+- Phases 4-6: Other dialogs (6 weeks)
+- Phase 7: Image Editor (10 weeks - complex cross-platform testing)
+- Phase 8: Cutover (3 weeks)
+
+**Additional Requirements**:
+- CI/CD for Linux and macOS builds
+- Test infrastructure for all platforms
+- Handle platform differences (system tray, file dialogs, keyboard shortcuts)
+- macOS code signing and notarization
+
+**Risk Level**: MEDIUM-HIGH (vs LOW for WPF)
+
+### Final Recommendation
+
+**For Greenshot Today**: Start with **WPF**
+- Lowest risk, fastest delivery
+- Solves immediate problems
+- Proven in existing codebase
+- Enables future Avalonia migration
+
+**For Greenshot Future**: Plan migration to **Avalonia** when:
+- .NET 6+ upgrade is feasible
+- Cross-platform demand is validated
+- WPF migration is complete and stable
+- Resources available for multi-platform testing
+
+This two-phase approach balances immediate needs with long-term vision while minimizing risk and maximizing value delivery.
 
 ## Modern Translation System Recommendations
 
@@ -224,129 +417,299 @@ conf.Language = "de-DE";
 - Difficult for machine translation
 - Custom parser maintenance burden
 
-### Option 1: RESX with ResX Resource Manager ⭐ RECOMMENDED for .NET Framework
+### Translation Format Options - Comprehensive Analysis
+
+#### Option 1: JSON (JavaScript Object Notation)
+
+**Overview**: Human-readable, hierarchical key-value format widely used in modern web and desktop apps.
 
 **Pros**:
-- ✅ **Native .NET** - built into Visual Studio
-- ✅ **Tooling support** - Visual Studio Resource Editor
-- ✅ **Strongly typed** - compile-time checking
-- ✅ **Works with WPF** - excellent integration
-- ✅ **Established** - industry standard for .NET
+- ✅ **Highly Human-Readable** - Clean, minimal syntax
+- ✅ **Universal Platform Support** - Crowdin, Weblate, Transifex, Lokalise all support JSON
+- ✅ **Machine Translation Ready** - Easy to parse for DeepL, Google Translate, ChatGPT
+- ✅ **Version Control Friendly** - Clear diffs, easy merge conflict resolution
+- ✅ **Industry Standard** - Used by React, Angular, Vue, Electron apps
+- ✅ **Excellent Tooling** - IDE support, validation, linters
+- ✅ **Flexible Structure** - Nested hierarchies for organization
+- ✅ **No Dependencies** - Built into .NET with System.Text.Json
+- ✅ **Fast Parsing** - Lightweight and performant
 
 **Cons**:
-- ❌ **Less human-readable** - binary .resx format
-- ❌ **Limited platform support** - requires conversion for Crowdin etc.
+- ❌ **No Built-in WPF Integration** - Needs custom markup extension (but easy to implement)
+- ❌ **Runtime Loading** - Not compiled into assemblies (can be mitigated with build-time RESX generation)
+- ❌ **No Pluralization** - Simple JSON doesn't handle plural forms (need library like i18next.net)
 
-**RESX + Resource Manager Pattern**:
-```xml
-<!-- Resources.en-US.resx -->
-<data name="about_title">
-  <value>About Greenshot</value>
-</data>
-```
+**Libraries**:
+- **i18next.net** - Feature-rich with pluralization, interpolation, namespacing
+- **Custom Parser** - Simple, lightweight if only basic translation needed
+- **Hybrid Approach** - JSON source → build-time RESX generation for WPF
 
-```csharp
-// Usage
-Resources.Culture = new CultureInfo("de-DE");
-string title = Resources.about_title;
-```
-
-### Option 2: JSON with Custom or Library-based Solution ⭐ RECOMMENDED for Human-Readability
-
-**Libraries to Consider**:
-- **I18Next.Net** - Port of popular JavaScript i18next library
-- **Westwind.Globalization** - Mature .NET globalization library
-- **Custom JSON parser** - Lightweight, full control
-
-**Pros**:
-- ✅ **Human-readable** - Clean, simple format
-- ✅ **Platform friendly** - Easy upload to Crowdin, Weblate, Transifex
-- ✅ **Machine translation** - Easy to parse for AI translation
-- ✅ **Version control friendly** - Better diff/merge
-- ✅ **Modern** - Industry standard for web apps
-- ✅ **Tooling** - Many translation tools support JSON
-
-**Cons**:
-- ❌ **Custom integration needed** - More setup than RESX
-- ❌ **Runtime loading** - Not compiled into assemblies
-
-**JSON Example**:
+**Example**:
 ```json
 {
+  "$schema": "./translation-schema.json",
+  "language": {
+    "code": "en-US",
+    "name": "English (United States)"
+  },
   "about": {
     "title": "About Greenshot",
-    "bugs": "Please report bugs to",
-    "donations": "If you like Greenshot, you are welcome to support us"
+    "version": "Version {0}",
+    "bugs": "Please report bugs to"
   },
   "contextmenu": {
     "settings": "Preferences...",
-    "exit": "Exit",
     "capturearea": "Capture region"
   }
 }
 ```
 
-**Usage with I18Next.Net**:
-```csharp
-// Setup
-var translator = new I18NextNet.Translator();
-translator.AddTranslation("en-US", jsonContent);
+**Best For**: Maximum human readability, platform integration, modern tooling
 
-// Usage
-string title = translator.Translate("about.title");
-```
+#### Option 2: RESX (Resource Files)
 
-### Option 3: PO Files (Gettext)
+**Overview**: Microsoft's native .NET resource format with Visual Studio integration.
 
 **Pros**:
-- ✅ **Industry standard** - Used by thousands of open source projects
-- ✅ **Human-readable** - Plain text format
-- ✅ **Excellent tooling** - Poedit, Lokalize, many web platforms
-- ✅ **Proven** - Decades of use
+- ✅ **Native .NET Integration** - Built into Visual Studio and MSBuild
+- ✅ **Strongly Typed** - Auto-generated C# classes with compile-time checking
+- ✅ **Excellent WPF Support** - Direct binding in XAML via x:Static
+- ✅ **Compiled Resources** - Embedded in assemblies for performance
+- ✅ **Mature Tooling** - Visual Studio Resource Editor, ResX Manager
+- ✅ **Localization Preview** - Can preview different languages in VS
+- ✅ **No Custom Code** - Works out of the box
 
 **Cons**:
-- ❌ **Less .NET native** - Needs NGettext or similar library
-- ❌ **Additional complexity** - .po/.pot/.mo file management
+- ❌ **Not Human-Readable** - XML-heavy format designed for tools, not humans
+- ❌ **Poor Version Control** - Large XML diffs, merge conflicts difficult
+- ❌ **Limited Platform Support** - Most translation platforms require conversion
+- ❌ **Machine Translation Difficult** - Must convert to/from RESX
+- ❌ **Editing Experience** - Grid editor in VS is clunky for large translations
 
-**PO File Example**:
+**Example**:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="about_title" xml:space="preserve">
+    <value>About Greenshot</value>
+  </data>
+  <data name="about_version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+</root>
+```
+
+**Usage in WPF**:
+```xaml
+<TextBlock Text="{x:Static properties:Resources.about_title}"/>
+```
+
+**Best For**: WPF projects that don't need external translation platforms, .NET-only workflow
+
+#### Option 3: PO/POT Files (Gettext)
+
+**Overview**: Traditional Unix/Linux localization format used by thousands of open source projects.
+
+**Pros**:
+- ✅ **Industry Standard** - 30+ years of proven use
+- ✅ **Human-Readable** - Plain text format
+- ✅ **Best Translation Tools** - Poedit, Lokalize, GTranslator (desktop apps for translators)
+- ✅ **Platform Support** - Supported by all major translation platforms
+- ✅ **Pluralization Built-in** - Native support for plural forms
+- ✅ **Context Support** - Can add translator comments and context
+- ✅ **Large Ecosystem** - Many tools and workflows available
+
+**Cons**:
+- ❌ **Not .NET Native** - Requires NGettext or similar library
+- ❌ **File Management** - Separate .po/.pot/.mo files per language
+- ❌ **Learning Curve** - Unfamiliar to .NET developers
+- ❌ **Build Complexity** - Need tooling to compile .po → .mo files
+
+**Libraries**:
+- **NGettext** - Mature .NET Gettext implementation
+- **Karambolo.PO** - Modern, .NET Standard library
+
+**Example**:
 ```po
+# Translation for About dialog
 msgid "about_title"
 msgstr "About Greenshot"
 
-msgid "contextmenu_settings"
+# Supports context
+msgctxt "menu"
+msgid "settings"
 msgstr "Preferences..."
+
+# Plural forms
+msgid "file_count_one"
+msgid_plural "file_count_many"
+msgstr[0] "{0} file"
+msgstr[1] "{0} files"
 ```
 
-### Hybrid Recommendation: JSON Primary, RESX for WPF Bindings
+**Best For**: Cross-platform projects, teams familiar with Linux/Unix localization
 
-**Strategy**:
-1. **JSON files** as source of truth - human-readable, platform-friendly
-2. **Build-time generation** of RESX files from JSON for WPF XAML bindings
-3. **Runtime JSON loading** for dynamic scenarios
-4. **Migration tool** to convert existing XML to JSON
+#### Option 4: YAML
+
+**Overview**: Human-readable data serialization format, popular in configuration and i18n.
+
+**Pros**:
+- ✅ **Very Human-Readable** - Minimal syntax, whitespace-based
+- ✅ **Platform Support** - Crowdin, Weblate support YAML
+- ✅ **Flexible** - Comments, multi-line strings, references
+- ✅ **Good Tooling** - YAML linters, validators available
+
+**Cons**:
+- ❌ **Whitespace Sensitive** - Indentation errors can break parsing
+- ❌ **Slower Parsing** - More complex than JSON
+- ❌ **Less Common** - Not as widespread as JSON for i18n
+- ❌ **Fewer .NET Libraries** - YamlDotNet is main option
+
+**Example**:
+```yaml
+language:
+  code: en-US
+  name: English (United States)
+
+about:
+  title: About Greenshot
+  version: "Version {0}"
+  bugs: Please report bugs to
+
+contextmenu:
+  settings: Preferences...
+  capturearea: Capture region
+```
+
+**Best For**: Teams already using YAML heavily, preference for minimal syntax
+
+#### Option 5: XLIFF (XML Localization Interchange File Format)
+
+**Overview**: Industry-standard XML format for translation exchange between tools.
+
+**Pros**:
+- ✅ **Translation Industry Standard** - Used by professional translation tools
+- ✅ **Full Platform Support** - All translation platforms support XLIFF
+- ✅ **Rich Metadata** - Translation units, context, notes, state
+- ✅ **Tool Interoperability** - Exchange between CAT tools (SDL Trados, MemoQ, etc.)
+- ✅ **Quality Assurance** - Built-in support for translation memory, validation
+
+**Cons**:
+- ❌ **Not Human-Readable** - Verbose XML format
+- ❌ **Overkill for Simple Projects** - Designed for enterprise translation workflows
+- ❌ **Complex** - Learning curve for developers
+- ❌ **Limited .NET Support** - Fewer libraries compared to JSON/RESX
+
+**Example**:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" target-language="de-DE" datatype="plaintext">
+    <body>
+      <trans-unit id="about_title">
+        <source>About Greenshot</source>
+        <target>Über Greenshot</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
+```
+
+**Best For**: Enterprise translation workflows, professional translation agencies
+
+### Comparison Matrix: Translation Formats
+
+| Criteria | JSON | RESX | PO/POT | YAML | XLIFF |
+|----------|------|------|--------|------|-------|
+| **Human Readability** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ |
+| **Platform Support** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Machine Translation** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Version Control** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
+| **WPF Integration** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
+| **Tooling** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Setup Complexity** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ |
+| **Pluralization** | ⭐⭐⭐* | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐* | ⭐⭐⭐⭐⭐ |
+| **Performance** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+
+*With library support (i18next.net, etc.)
+
+### Recommended Approach: Hybrid JSON + RESX
+
+**Strategy**: Use JSON as source of truth, auto-generate RESX for WPF integration
+
+**How It Works**:
+1. **Source Files**: JSON files for all languages (human-editable, platform-friendly)
+2. **Build Process**: MSBuild task converts JSON → RESX at build time
+3. **XAML Usage**: Standard WPF bindings using generated RESX
+4. **C# Usage**: Either RESX classes or JSON-based TranslationService
 
 **Benefits**:
+- ✅ Human-readable JSON for developers and translators
+- ✅ Upload to Crowdin/Weblate easily
+- ✅ Machine translation compatible
+- ✅ Clean version control diffs
+- ✅ Strong typing in WPF via RESX
 - ✅ Best of both worlds
-- ✅ Human-readable source files
-- ✅ Platform integration (Crowdin, etc.)
-- ✅ Strong typing in code (via generated RESX)
-- ✅ XAML binding support
-- ✅ Machine translation friendly
 
-**Implementation Approach**:
+**Implementation**:
 ```
-Languages/
-  en-US.json          (source of truth)
-  de-DE.json
-  fr-FR.json
-  
-Build/
-  GenerateResx.targets  (MSBuild task)
-  
-Generated/
-  Resources.en-US.resx  (auto-generated)
-  Resources.de-DE.resx
+Source:           Build Time:           Runtime:
+en-US.json  -->   Resources.en-US.resx  -->  WPF Binding
+de-DE.json  -->   Resources.de-DE.resx  -->  or C# Code
+fr-FR.json  -->   Resources.fr-FR.resx
 ```
+
+**MSBuild Integration**:
+```xml
+<Target Name="GenerateResxFromJson" BeforeTargets="CoreCompile">
+  <JsonToResxTask SourceFiles="@(JsonTranslations)" />
+</Target>
+```
+
+### Alternative: Pure JSON with Custom Markup Extension
+
+**For projects wanting zero RESX**:
+
+Custom WPF Markup Extension:
+```xaml
+<!-- XAML Usage -->
+<TextBlock Text="{local:Translate about.title}"/>
+```
+
+C# Implementation:
+```csharp
+[MarkupExtensionReturnType(typeof(string))]
+public class TranslateExtension : MarkupExtension
+{
+    public string Key { get; set; }
+    
+    public override object ProvideValue(IServiceProvider serviceProvider)
+    {
+        return TranslationService.Instance.Translate(Key);
+    }
+}
+```
+
+**Note**: Confluence plugin already uses this pattern!
+
+### Recommendation Summary
+
+**Primary Recommendation**: **JSON with Build-Time RESX Generation**
+- Source: JSON (human-readable, platform-compatible)
+- Build: Auto-generate RESX for WPF strong typing
+- Platform: Upload JSON to Crowdin/Weblate
+- Machine Translation: Feed JSON to DeepL/ChatGPT
+- Best balance of all factors
+
+**Alternative for WPF-Only Teams**: **Pure RESX**
+- If never using translation platforms
+- If prefer Visual Studio-only workflow
+- Simpler setup but less flexible
+
+**Alternative for Linux/Cross-Platform Focus**: **PO Files with NGettext**
+- If targeting Linux users heavily
+- If translators familiar with Poedit
+- Traditional open source approach
 
 ## Step-by-Step Migration Plan
 
