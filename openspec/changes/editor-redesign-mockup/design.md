@@ -42,7 +42,7 @@ Alternative considered: reference the production drawing engine or a third-party
 
 ### Use a small representative toolset with consistent placement rules
 
-Provide selection, rectangle, ellipse, line, arrow, text, and freehand tools. In classic mode, shape tools create their object from a drag gesture. In click-to-add mode, rectangle, ellipse, line, arrow, and text create an object on click with a tool-appropriate default size and select it. Line and arrow use a default horizontal span with endpoint resizing. Freehand remains drag-drawn in either mode. In both modes, users can select, move, and resize existing objects.
+Provide selection, rectangle, ellipse, line, arrow, text, and freehand tools. In classic mode, shape tools create their object from a drag gesture. In click-to-add mode, clicking rectangle, ellipse, line, arrow, or text in the toolbar immediately creates and selects an object; it does not activate that drawing tool on the canvas. New objects are centered in the document, with a default width of 10% of the document width and a golden-ratio width-to-height ratio for area-based shapes. Repeated additions are slightly offset so they remain visible. The Select tool remains active, allowing immediate canvas dragging to move or resize the new object; clicking another drawing-tool button adds another object. Line and arrow use a horizontal span and expose endpoint handles. Freehand remains drag-drawn in either mode and is reset to Select after the stroke. In both modes, users can select, move, and resize existing objects.
 
 Expose the mode as a prototype-only selector. Do not write it to Greenshot configuration or claim the prototype has validated configuration persistence.
 
@@ -58,7 +58,7 @@ The small property set is chosen to validate the panel's layout and edit loop, n
 
 Image edits, annotations, and mode selection live only for the current process. Do not offer save, export, upload, print, recipe, plugin, or capture integration. Mark the window as an experimental mock-up so screenshots and demonstrations are not mistaken for a production editor.
 
-Any user-visible labels added by implementation must follow the repository localization workflow, with the translation-manager consulted. This does not add strings to production editor language files or create a production UI commitment.
+The prototype UI is English-only; localization is intentionally out of scope. No production editor language files are changed.
 
 ## Risks / Trade-offs
 
