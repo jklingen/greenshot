@@ -175,6 +175,12 @@ $env:Box13_ClientSecret = "your_secret"
 
 ## Making Code Changes
 
+### OpenSpec workflow
+
+Use OpenSpec for non-trivial features, externally observable behavior changes, and broad or cross-cutting refactors. Start with `/opsx-explore` when requirements or the approach are unclear, then use `/opsx-propose <change>` to create the proposal, delta specs, design, and tasks. The proposal workflow is planning-only: present the artifacts for review and wait for a separate request before implementing with `/opsx-apply`. Update the artifacts if implementation changes the agreed scope, and archive completed changes with `/opsx-archive`.
+
+Do not require OpenSpec for small, localized bug fixes, routine maintenance, documentation-only changes, or translation-only work unless requested. Do not backfill specifications for untouched parts of the codebase; add or update specs only for the behavior a change affects.
+
 ### Typical Workflow
 1. **Restore**: `msbuild src/Greenshot.sln /p:Configuration=Debug /restore /t:PrepareForBuild`
 2. **Build**: `msbuild src/Greenshot.sln /p:Configuration=Debug /t:Build /v:minimal`

@@ -1,0 +1,28 @@
+schema: spec-driven
+githubCopilot:
+  cloudAgent: false
+
+context: |
+  Greenshot is a Windows desktop application targeting .NET Framework 4.8.
+  Build and validate on Windows with Visual Studio MSBuild; do not use dotnet build.
+  New or changed user-facing UI strings require localization in supported languages.
+
+rules:
+  proposal:
+    - Keep the change scoped to the requested behavior and state important exclusions.
+    - Identify compatibility impact for Windows and .NET Framework 4.8.
+  specs:
+    - Describe observable behavior with concrete scenarios, including relevant failure cases.
+    - For UI changes, include localization impact; translation work follows the repository translation workflow.
+  design:
+    - Prefer approaches consistent with the existing WinForms, WPF, and plugin architecture.
+    - Identify focused validation using the repository's Windows/MSBuild workflow.
+  tasks:
+    - Make tasks specific and independently verifiable.
+    - Include localization tasks when user-facing strings are added, changed, or removed.
+
+operations:
+  apply:
+    guidance:
+      - Follow repository instructions for builds and validation; do not use dotnet build.
+      - Delegate translation-file work to the repository translation-manager agent.
