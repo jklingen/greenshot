@@ -1,4 +1,4 @@
-# Design
+﻿# Design
 
 ## Context
 
@@ -50,9 +50,11 @@ Alternative considered: support every legacy tool and filter in the mock-up. Tha
 
 ### Make selection and properties observable and editable
 
-Use visible selection bounds and resize handles on the canvas. The right-side panel displays labeled position, width, and height controls plus representative style controls (line color, fill color, and line thickness) for the selected object; changing a control updates the prototype object and canvas immediately. Hide or disable properties when no compatible object is selected.
+Use visible selection bounds and resize handles on the canvas. The right-side panel (docked by default, undockable into a floating window) shows labeled controls in collapsible groups: Layout (X, Y, width, height) and Line and fill (line color, line thickness, fill color). Tools are icon buttons in a vertical bar on the left. Controls for the selected object; changing a control updates the prototype object and canvas immediately. Hide or disable properties when no compatible object is selected.
 
 The small property set is chosen to validate the panel's layout and edit loop, not to specify final controls or mixed-selection behavior.
+
+Text annotations use inline rich-text editing on the canvas, entered by double-click (or F2 after keyboard selection). Text properties are grouped separately and include font family, size, color, bold, italic, underline, horizontal alignment, and vertical alignment. Formatting changes apply to the selected character range while editing; with no character range selected, they apply to the whole text annotation. This remains prototype scope and does not add screen-reader support.
 
 ### Keep prototype state volatile and identify the UI as experimental
 

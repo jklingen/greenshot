@@ -1,4 +1,4 @@
-# Tasks
+﻿# Tasks
 
 ## 1. Standalone Project and Canvas
 
@@ -19,3 +19,13 @@
 ## 4. Prototype Review
 
 - [x] 4.1 Add concise project-local run instructions and perform a manual smoke review of both interaction modes, image loading and failure handling, tool-click object creation, selection, transforms, and property edits; verify the prototype remains outside Greenshot startup, solution builds, and release packaging.
+
+- [x] 4.2 Layout feedback: tools as icon buttons in a vertical left-hand bar; properties panel docked on the right by default and undockable into a floating window; properties grouped into collapsible Layout and Line and fill groups.
+
+- [x] 4.3 Multi-selection: Shift+click toggles objects in the selection, dragging moves the whole selection, and the properties panel shows the common value or a not-equal sign for differing values and applies edits to all selected objects; X, Y, width and height accept whole numbers only.
+
+- [x] 4.4 Keyboard operation: Tab/Shift+Tab inside the canvas moves selection through objects (leaving the canvas at the ends), F6 cycles regions, arrows move and Alt+arrows resize the selection, Space toggles, Ctrl+A, Esc, Delete, Enter jumps to properties.
+- [x] 4.5 Color picker: line and fill color buttons open a picker (saturation/value area, hue, opacity, hex) and show the last 10 picked colors; the picked color applies to the selection and to newly drawn objects.
+
+- [x] 4.6 Add inline WYSIWYG text editing and text properties for font family, font size, color, bold, italic, underline, horizontal alignment, and vertical alignment; apply formatting to selected characters or the complete text when no character range is selected.
+- [x] 4.7 Allow text on every element except freehand: typing while one element is selected starts inline text entry; text is centered in rectangles and ellipses and runs centered above lines and arrows.
